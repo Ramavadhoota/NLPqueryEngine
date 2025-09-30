@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP Query Engine - AI-Powered Database Queries</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1 class="app-title">
+                            <i class="fas fa-brain"></i>
+                            NLP Query Engine
+                        </h1>
+                        <span class="model-badge">
+                            <i class="fas fa-robot"></i>
+                            all-MiniLM-L6-v2
+                        </span>
+                    </div>
+                    <div class="header-right">
+                        <div class="connection-status" id="connectionStatus">
+                            <i class="fas fa-circle"></i>
+                            <span>Disconnected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <!-- Database Connection Panel -->
+            <section class="panel" id="databasePanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-database"></i> Database Connection</h2>
+                    <p>Connect to your SQLite database for automatic schema discovery</p>
+                </div>
+                <div class="panel-content">
+                    <div class="input-group">
+                        <label for="databaseFile">Upload SQLite Database File</label>
+                        <div class="file-upload-area" id="databaseUploadArea">
+                            <input type="file" id="databaseFile" accept=".db,.sqlite,.sqlite3" hidden>
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop your SQLite file here or <span class="upload-link">click to browse</span></p>
+                                <small>Supported: .db, .sqlite, .sqlite3</small>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="connectButton" disabled>
+                        <i class="fas fa-plug"></i>
+                        Connect & Analyze Database
+                    </button>
+                </div>
+            </section>
+
+            <!-- Schema Display Panel -->
+            <section class="panel hidden" id="schemaPanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-table"></i> Database Schema</h2>
+                    <p>Automatically discovered tables and their structure</p>
+                </div>
+                <div class="panel-content">
+                    <div class="schema-stats" id="schemaStats"></div>
+                    <div class="tables-grid" id="tablesGrid"></div>
+                </div>
+            </section>
+
+            <!-- Document Upload Panel -->
+            <section class="panel" id="documentsPanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-file-alt"></i> Document Processing</h2>
+                    <p>Upload documents for semantic search with AI embeddings</p>
+                </div>
+                <div class="panel-content">
+                    <div class="file-upload-area" id="documentsUploadArea">
+                        <input type="file" id="documentsFile" multiple accept=".pdf,.docx,.txt,.csv" hidden>
+                        <div class="upload-content">
+                            <i class="fas fa-files"></i>
+                            <p>Drag & drop documents here or <span class="upload-link">click to browse</span></p>
+                            <small>Supported: PDF, DOCX, TXT, CSV (Max 10MB each)</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" id="uploadDocumentsButton" disabled>
+                        <i class="fas fa-upload"></i>
+                        Process Documents
+                    </button>
+                    <div class="document-status" id="documentStatus"></div>
+                </div>
+            </section>
+
+            <!-- Query Interface Panel -->
+            <section class="panel" id="queryPanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-comments"></i> Natural Language Queries</h2>
+                    <p>Ask questions about your data in plain English</p>
+                </div>
+                <div class="panel-content">
+                    <div class="query-input-container">
+                        <textarea id="queryInput" 
+                                placeholder="Ask a question about your data (e.g., 'How many employees are there?', 'Show me the highest salaries', 'Find documents about vacation policy')"
+                                rows="3"></textarea>
+                        <div class="query-actions">
+                            <button class="btn btn-primary" id="executeQueryButton" disabled>
+                                <i class="fas fa-play"></i>
+                                Execute Query
+                            </button>
+                            <button class="btn btn-outline" id="explainQueryButton" disabled>
+                                <i class="fas fa-lightbulb"></i>
+                                Explain Query
+                            </button>
+                            <button class="btn btn-outline" id="suggestionsButton" disabled>
+                                <i class="fas fa-magic"></i>
+                                Get Suggestions
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Query Suggestions -->
+                    <div class="suggestions-container hidden" id="suggestionsContainer">
+                        <h4>Suggested Queries:</h4>
+                        <div class="suggestions-list" id="suggestionsList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Panel -->
+            <section class="panel hidden" id="resultsPanel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-chart-bar"></i> Query Results</h2>
+                    <div class="results-tabs">
+                        <button class="tab-button active" data-tab="database">Database Results</button>
+                        <button class="tab-button" data-tab="documents">Document Results</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <!-- Query Info -->
+                    <div class="query-info" id="queryInfo"></div>
+                    
+                    <!-- Database Results Tab -->
+                    <div class="tab-content active" id="databaseResults">
+                        <div class="results-container" id="databaseResultsContainer"></div>
+                    </div>
+                    
+                    <!-- Document Results Tab -->
+                    <div class="tab-content" id="documentResults">
+                        <div class="results-container" id="documentResultsContainer"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Loading Overlay -->
+            <div class="loading-overlay hidden" id="loadingOverlay">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <p id="loadingMessage">Processing...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
